@@ -66,7 +66,13 @@ interface OpenCodeMemConfig {
   autoCaptureMaxContextBytes?: number;
   autoCaptureLanguage?: string;
   memoryProvider?:
-    "atlas-cloud" | "openai-chat" | "openai-responses" | "anthropic" | "minimax" | "orcarouter";
+    | "atlas-cloud"
+    | "cheaper-inference"
+    | "openai-chat"
+    | "openai-responses"
+    | "anthropic"
+    | "minimax"
+    | "orcarouter";
   memoryModel?: string;
   memoryApiUrl?: string;
   memoryApiKey?: string;
@@ -210,7 +216,13 @@ const DEFAULTS: Required<
   memoryApiUrl?: string;
   memoryApiKey?: string;
   memoryProvider?:
-    "atlas-cloud" | "openai-chat" | "openai-responses" | "anthropic" | "minimax" | "orcarouter";
+    | "atlas-cloud"
+    | "cheaper-inference"
+    | "openai-chat"
+    | "openai-responses"
+    | "anthropic"
+    | "minimax"
+    | "orcarouter";
   memoryTemperature?: number | false;
   forceToolChoice?: boolean;
   memoryExtraParams?: Record<string, unknown>;
@@ -487,7 +499,7 @@ const CONFIG_TEMPLATE = `{
   
   "autoCaptureEnabled": true,
   
-  // Provider type: "atlas-cloud" | "openai-chat" | "openai-responses" | "anthropic" | "minimax" | "orcarouter"
+  // Provider type: "atlas-cloud" | "cheaper-inference" | "openai-chat" | "openai-responses" | "anthropic" | "minimax" | "orcarouter"
   // Note: "openai-chat" is a generic OpenAI API-compatible mode.
   // Any service that follows the OpenAI Chat Completions API can use it via custom "memoryApiUrl".
   "memoryProvider": "openai-chat",
@@ -560,6 +572,15 @@ const CONFIG_TEMPLATE = `{
   //   // conversation context are sent to api.atlascloud.ai.
   //   // "memoryModel": "deepseek-ai/deepseek-v4-pro"
 
+  // Cheaper Inference (OpenAI-compatible Chat Completions preset, with session support):
+  //   "memoryProvider": "cheaper-inference"
+  //   "memoryApiKey": "env://CHEAPER_INFERENCE_API_KEY"
+  //   // memoryApiUrl and memoryModel are optional — they default to
+  //   // https://api.cheaperinference.com/v1 and "gpt-5.4-mini".
+  //   // When selected, auto-capture/profile prompts, responses, and relevant
+  //   // conversation context are sent to api.cheaperinference.com.
+  //   // "memoryModel": "gpt-5.4-mini"
+
   // Groq (OpenAI-compatible, use openai-chat provider):
   //   "memoryProvider": "openai-chat"
   //   "memoryModel": "llama-3.3-70b-versatile"
@@ -588,7 +609,7 @@ const CONFIG_TEMPLATE = `{
   // Set to false and add "memoryTemperature": false in config when using such models
   "memoryTemperature": 0.3,
 
-  // Force tool calls on openai-chat / orcarouter / atlas-cloud (tool_choice: "required"). Default true.
+  // Force tool calls on openai-chat / orcarouter / atlas-cloud / cheaper-inference (tool_choice: "required"). Default true.
   // Some thinking/reasoning models reject forced tool choice — set false to fall back to "auto":
   // "forceToolChoice": false,
 
@@ -960,10 +981,20 @@ export function normalizeInjectionMarkers(value: string[] | undefined): string[]
 
 function buildConfig(fileConfig: OpenCodeMemConfig) {
   const memoryProvider = (fileConfig.memoryProvider ?? "openai-chat") as
-    "atlas-cloud" | "openai-chat" | "openai-responses" | "anthropic" | "minimax" | "orcarouter";
+    | "atlas-cloud"
+    | "cheaper-inference"
+    | "openai-chat"
+    | "openai-responses"
+    | "anthropic"
+    | "minimax"
+    | "orcarouter";
   const memoryApiKey =
     resolveSecretValue(fileConfig.memoryApiKey) ??
-    (memoryProvider === "atlas-cloud" ? process.env.ATLASCLOUD_API_KEY : undefined);
+    (memoryProvider === "atlas-cloud"
+      ? process.env.ATLASCLOUD_API_KEY
+      : memoryProvider === "cheaper-inference"
+        ? process.env.CHEAPER_INFERENCE_API_KEY
+        : undefined);
   const embeddingModel = fileConfig.embeddingModel ?? DEFAULTS.embeddingModel;
   const embeddingPreset = getEmbeddingModelPreset(embeddingModel);
   const embeddingDimensions =
@@ -1186,7 +1217,11 @@ export function getAutoCaptureProviderStatus(
 
   // Preset providers fill endpoint/model themselves, so only an API key is
   // required for the manual fallback path.
-  if (config.memoryProvider === "orcarouter" || config.memoryProvider === "atlas-cloud") {
+  if (
+    config.memoryProvider === "orcarouter" ||
+    config.memoryProvider === "atlas-cloud" ||
+    config.memoryProvider === "cheaper-inference"
+  ) {
     if (!hasMemoryApiKey) issues.push("memoryApiKey is not configured");
     if (hasPlaceholderMemoryApiKey) issues.push("memoryApiKey contains a placeholder value");
     if (hasMemoryApiKey && !hasPlaceholderMemoryApiKey) {
