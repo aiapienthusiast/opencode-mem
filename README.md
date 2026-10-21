@@ -7,7 +7,7 @@
 
 ![OpenCode Memory Banner](.github/pics/banner.png)
 
-Languages: **🇬🇧** | [🇩🇪](./README.de.md) | [🇨🇳](./README.zh.md) | [🇸🇦](./README.ar.md) | [🇹🇷](./README.tr.md) | [🇳🇱](./README.nl.md)
+Languages: **🇬🇧** | [🇩🇪](./i18n/README.de.md) | [🇨🇳](./i18n/README.zh.md) | [🇸🇦](./i18n/README.ar.md) | [🇹🇷](./i18n/README.tr.md) | [🇳🇱](./i18n/README.nl.md)
 
 A persistent memory system for AI coding agents that enables long-term context retention across sessions using local vector database technology.
 
@@ -178,6 +178,10 @@ Rule of thumb: lasting always-on project instructions → `AGENTS.md`; growing w
 - On OpenCode **V2**, the plugin registers enabled skills via `ctx.skill.transform` so the agent can load them with the native `skill` tool.
 - Optional HTTP catalog for other OpenCode instances: `"skills": ["http://127.0.0.1:4747/skills/"]` (serves `/skills/index.json` and `/skills/<id>/<id>.md` — separate from the UI path).
 - REST: `GET/POST /api/skills`, `GET/PUT/DELETE /api/skills/:id`.
+
+### Health stats
+
+The web UI's **Stats** tab (at `/stats`) shows memory-system health at a glance: totals per scope, per-shard memory counts with stale/missing-shard warnings and a same-tag duplication proxy, the active user-profile version, and a 14-day activity series (captures, skipped captures, profile/compaction injections, and errors bucketed by message) parsed from the plugin's own structured logs in `~/.opencode-mem/`. It is read-only — `GET /api/stats` — and degrades per section if a database is unavailable, so it keeps reporting during incidents.
 
 ### Intelligent prompt-based memory extraction
 
@@ -555,7 +559,7 @@ bun run format
 
 This project is actively seeking contributions to become the definitive memory plugin for AI coding agents. Whether you are fixing bugs, adding features, improving documentation, or expanding embedding model support, your contributions are critical. The codebase is well-structured and ready for enhancement. Please open issues with the Issue or Feature request templates, and fill out the pull request template when you submit a PR — we review and merge contributions quickly.
 
-**README translations:** `README.md` (English) is the source of truth. When you change its content, update the sibling files `README.de.md`, `README.zh.md`, `README.ar.md`, `README.tr.md`, and `README.nl.md` to match.
+**README translations:** `README.md` (English) is the source of truth. When you change its content, update the files under `i18n/` (`README.de.md`, `README.zh.md`, `README.ar.md`, `README.tr.md`, and `README.nl.md`) to match.
 
 ## License & Links
 

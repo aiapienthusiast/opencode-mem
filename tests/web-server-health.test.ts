@@ -3,10 +3,12 @@ import { createServer } from "node:http";
 import { WebServer, nextFallbackPort } from "../src/services/web-server.js";
 
 describe("web server health check", () => {
-  it("authenticates the stats request when an API token is configured", async () => {
+  it("authenticates the stats probe when an API token is configured", async () => {
     const originalFetch = globalThis.fetch;
+    let requestUrl: string | undefined;
     let requestHeaders: Headers | undefined;
-    globalThis.fetch = async (_input, init) => {
+    globalThis.fetch = async (input, init) => {
+      requestUrl = String(input);
       requestHeaders = new Headers(init?.headers);
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     };
@@ -20,6 +22,7 @@ describe("web server health check", () => {
       });
 
       expect(await server.checkServerAvailable()).toBe(true);
+      expect(requestUrl).toBe("http://0.0.0.0:4747/api/stats?probe=1");
       expect(requestHeaders?.get("Authorization")).toBe("Bearer health-token");
     } finally {
       globalThis.fetch = originalFetch;

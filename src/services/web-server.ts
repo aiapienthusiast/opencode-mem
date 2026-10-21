@@ -423,7 +423,10 @@ export class WebServer {
       const headers = this.config.apiToken
         ? { Authorization: `Bearer ${this.config.apiToken}` }
         : undefined;
-      const endpoint = this.config.apiToken ? "/api/stats" : "/api/health";
+      // With an API token, probe authenticated /api/stats?probe=1 (cheap) so we
+      // prove ownership without walking shards or scanning logs. Health stays
+      // unauthenticated and is only safe when no token is configured.
+      const endpoint = this.config.apiToken ? "/api/stats?probe=1" : "/api/health";
       const response = await fetch(`${this.getUrl()}${endpoint}`, {
         method: "GET",
         headers,
@@ -571,7 +574,8 @@ export class WebServer {
       }
 
       if (path === "/api/stats" && method === "GET") {
-        const result = await handleStats();
+        const probe = url.searchParams.get("probe") === "1";
+        const result = await handleStats({ probe });
         return this.jsonResponse(result);
       }
 

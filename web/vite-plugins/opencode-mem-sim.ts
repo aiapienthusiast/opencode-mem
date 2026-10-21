@@ -138,10 +138,6 @@ export function opencodeMemSimPlugin(simRoot: string): Plugin {
         return skills.find((item) => item.id === id);
       }
 
-      function memoryCount() {
-        return memories.filter((item) => item.type === "memory").length;
-      }
-
       server.middlewares.use((req, res, next) => {
         const rawUrl = req.url || "/";
         if (!rawUrl.startsWith("/api")) {
@@ -165,10 +161,7 @@ export function opencodeMemSimPlugin(simRoot: string): Plugin {
           }
 
           if (pathname === "/api/stats" && method === "GET") {
-            sendJson(res, 200, {
-              success: true,
-              data: { total: memoryCount() },
-            });
+            sendJson(res, 200, readJson(path.join(simRoot, "stats.json")));
             return;
           }
 
