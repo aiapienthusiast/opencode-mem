@@ -193,7 +193,7 @@ describe("CheaperInferenceProvider", () => {
 });
 
 describe("AIProviderFactory cheaper-inference wiring", () => {
-  it("creates an Cheaper Inference provider and lists it as supported", () => {
+  it("creates a Cheaper Inference provider and lists it as supported", () => {
     const provider = AIProviderFactory.createProvider("cheaper-inference", {
       model: "",
       apiUrl: "",
